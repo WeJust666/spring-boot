@@ -26,37 +26,66 @@
 <div class="container mt-4">
 
     <!-- 留言表单（登录用户可见） -->
-    <div th:if="${#authentication.principal != 'anonymousUser'}" class="card shadow mb-4">
-        <div class="card-body">
-            <form action="/addMessage" method="post">
-                <div class="mb-3">
-                    <textarea name="message" class="form-control" placeholder="写下你的留言..." required></textarea>
+    <div th:if="${#authentication.principal != 'anonymousUser'}" class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded">
+                <div class="card-body">
+                    <h5 class="card-title text-primary mb-3">发布留言</h5>
+                    <form action="/addMessage" method="post">
+                        <div class="mb-3">
+                        <textarea name="message" class="form-control" rows="3"
+                                  placeholder="写下你的留言..." required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">提交留言</button>
+                        </div>
+                    </form>
                 </div>
-                <button type="submit" class="btn btn-primary">提交留言</button>
-            </form>
+            </div>
         </div>
     </div>
+
+
 
     <!-- 留言列表 -->
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            留言列表
-        </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item" th:each="msg : ${messages}">
-                <strong th:text="${msg.username}"></strong>：
-                <span th:text="${msg.message}"></span>
-                <br>
-                <small class="text-muted" th:text="${msg.timestamp}"></small>
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h3 class="mb-3">留言列表</h3>
+            <div class="list-group">
+                <div class="list-group-item mb-2 p-3 shadow-sm rounded"
+                     th:each="msg : ${messages}">
+                    <div class="d-flex align-items-start">
 
-                <form th:if="${#authentication.principal != 'anonymousUser'
-                               and (#authentication.name == msg.username or #authorization.expression('hasRole(''ADMIN'')'))}"
-                      th:action="@{/deleteMessage/{id}(id=${msg.id})}" method="post" class="ms-2">
-                    <button type="submit" class="btn btn-sm btn-danger">删除</button>
-                </form>
-            </li>
-        </ul>
+                        <!-- 用户头像 -->
+                        <img th:if="${msg.avatar != null}"
+                             th:src="@{/uploads/{avatar}(avatar=${msg.avatar})}"
+                             class="rounded-circle me-3" style="width:50px; height:50px; object-fit:cover;">
+                        <img th:if="${msg.avatar == null}"
+                             src="https://i.pravatar.cc/50"
+                             class="rounded-circle me-3" style="width:50px; height:50px; object-fit:cover;">
+
+                        <div class="flex-grow-1">
+                            <!-- 用户名 + 时间 -->
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong th:text="${msg.username}" class="text-primary"></strong>
+                                <small class="text-muted" th:text="${#temporals.format(msg.timestamp, 'yyyy-MM-dd HH:mm')}"></small>
+                            </div>
+
+                            <!-- 留言内容 -->
+                            <p th:text="${msg.message}" class="mb-1"></p>
+
+                            <!-- 删除按钮（登录用户或管理员可见） -->
+                            <form th:if="${#authentication.principal != 'anonymousUser' and (#authentication.name == msg.username or #authorization.expression('hasRole(''ROLE_ADMIN'')'))}"
+                                  th:action="@{/deleteMessage/{id}(id=${msg.id})}" method="post" class="mt-2">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                            </form>
+                        </div>
+                    </div>
+                </div> <!-- list-group-item end -->
+            </div> <!-- list-group end -->
+        </div>
     </div>
+
 </div>
 
 </body>

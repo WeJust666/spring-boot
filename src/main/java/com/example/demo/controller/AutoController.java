@@ -2,21 +2,27 @@ package com.example.demo.controller;
 
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.service.UserService;
+import com.example.demo.service.FileStorageService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Controller
 public class AutoController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    public AutoController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private final FileStorageService fileStorageService;
+
+    public AutoController(UserRepository userRepository, PasswordEncoder passwordEncoder, FileStorageService fileStorageService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping("/login")
@@ -33,7 +39,10 @@ public class AutoController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestParam String username, @RequestParam String password, Model model) {
+    public String register(@RequestParam String username,
+                           @RequestParam String password,
+                           @RequestParam(required = false) MultipartFile avatar,
+                           Model model) throws IOException {
         if (userRepository.findByUsername(username).isPresent()) {
             model.addAttribute("errorMsg", "username already exists!");
             return "register";
@@ -41,6 +50,11 @@ public class AutoController {
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
+        if(avatar != null) {
+            String fileName = fileStorageService.storeFile(avatar);
+            user.setAvatar(fileName);
+        }
+
         userRepository.save(user);
         return "redirect:/login";
     }

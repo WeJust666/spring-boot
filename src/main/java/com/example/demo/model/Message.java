@@ -16,6 +16,7 @@ public class Message {
     private String message;
     @Column(name = "timestamp")
     private LocalDateTime timestamp = LocalDateTime.now();
+    private String avatar;
 
     public Long getId() {return id;};
     public void setId(Long id) {this.id = id;};
@@ -25,4 +26,6 @@ public class Message {
     public void setMessage(String message) {this.message = message;};
     public LocalDateTime getTimestamp() {return timestamp;};
     public void setTimestamp(LocalDateTime timestamp) {this.timestamp = timestamp;};
+    public String getAvatar() {return avatar;};
+    public void setAvatar(String avatar) {this.avatar = avatar;};
 }
