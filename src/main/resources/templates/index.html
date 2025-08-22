@@ -71,14 +71,31 @@
                                 <small class="text-muted" th:text="${#temporals.format(msg.timestamp, 'yyyy-MM-dd HH:mm')}"></small>
                             </div>
 
-                            <!-- 留言内容 -->
-                            <p th:text="${msg.message}" class="mb-1"></p>
+                            <!-- 留言内容或编辑表单 -->
+                            <div th:id="'messageContent-' + ${msg.id}">
+                                <p th:text="${msg.message}" class="mb-1"></p>
+                            </div>
 
-                            <!-- 删除按钮（登录用户或管理员可见） -->
-                            <form th:if="${#authentication.principal != 'anonymousUser' and (#authentication.name == msg.username or #authorization.expression('hasRole(''ROLE_ADMIN'')'))}"
-                                  th:action="@{/deleteMessage/{id}(id=${msg.id})}" method="post" class="mt-2">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
-                            </form>
+                            <div th:id="'editForm-' + ${msg.id}" class="d-none">
+                                <form th:action="@{/editMessage/{id}(id=${msg.id})}" method="post" class="d-flex">
+                                    <input type="text" name="message" th:value="${msg.message}" class="form-control me-2" required>
+                                    <button type="submit" class="btn btn-success btn-sm">保存</button>
+                                    <button type="button" class="btn btn-secondary btn-sm ms-1"
+                                            th:onclick="'cancelEdit(' + ${msg.id} + ')'">取消</button>
+                                </form>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="mt-2">
+                                <button th:if="${#authentication.principal != null and #authentication.name == msg.username}"
+                                        type="button" class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'showEditForm(' + ${msg.id} + ')'">编辑</button>
+
+                                <form th:if="${#authentication.principal != null and (#authentication.name == msg.username or #authorization.expression('hasRole(''ROLE_ADMIN'')'))}"
+                                      th:action="@{/deleteMessage/{id}(id=${msg.id})}" method="post" class="d-inline ms-2">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div> <!-- list-group-item end -->
@@ -87,6 +104,19 @@
     </div>
 
 </div>
+
+<!-- 编辑留言脚本 -->
+<script>
+    function showEditForm(id) {
+        document.getElementById('messageContent-' + id).classList.add('d-none');
+        document.getElementById('editForm-' + id).classList.remove('d-none');
+    }
+
+    function cancelEdit(id) {
+        document.getElementById('editForm-' + id).classList.add('d-none');
+        document.getElementById('messageContent-' + id).classList.remove('d-none');
+    }
+</script>
 
 </body>
 </html>

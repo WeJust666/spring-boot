@@ -68,6 +68,23 @@ public class MessageController {
         return "redirect:/";
     }
 
+    @PostMapping("/editMessage/{id}")
+    public String editMessage(@PathVariable Long id,
+                              @RequestParam String message,
+                              Authentication authentication) {
+        Message msg = messageRepository.findById(id).orElse(null);
+        if (msg != null) {
+            String currentUser = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
+
+            if (isAdmin || msg.getUsername().equals(currentUser)) {
+                msg.setMessage(message);
+                messageRepository.save(msg);
+            }
+        }
+        return "redirect:/";
+    }
+
     @GetMapping("/uploads/{filename:.+}")
     @ResponseBody
     public Resource serveFile(@PathVariable String filename) throws MalformedURLException {
